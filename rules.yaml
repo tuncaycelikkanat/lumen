@@ -1,0 +1,9 @@
+rules:
+  - id: 1
+    name: "SSH Brute Force"
+    keyword: "Failed password"
+    severity: "High"
+  - id: 2
+    name: "SQL Injection"
+    keyword: "union select"
+    severity: "Critical"
