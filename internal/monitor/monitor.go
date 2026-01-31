@@ -25,7 +25,7 @@ func StartTailing(filePath string, rules []config.Rule, results chan<- Event) {
 	}
 	defer file.Close()
 
-	// Dosyanın sonuna atla
+	// jump to end !!
 	file.Seek(0, io.SeekEnd)
 	reader := bufio.NewReader(file)
 
@@ -36,7 +36,7 @@ func StartTailing(filePath string, rules []config.Rule, results chan<- Event) {
 			continue
 		}
 
-		// Her satırı kurallarla kıyasla
+		// I don't know how it is working
 		for _, rule := range rules {
 			if strings.Contains(line, rule.Keyword) {
 				results <- Event{
