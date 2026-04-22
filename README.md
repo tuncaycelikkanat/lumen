@@ -1,124 +1,126 @@
 # Lumen
 
-Lumen, **YAML tabanlı kurallar** ile çalışan, container içinde kolayca çalıştırılabilen hafif bir kural/analiz motorudur. Temel amacı, kullanıcı tarafından tanımlanan `rules.yaml` dosyasını okuyarak bu kurallara göre belirli kontrolleri, analizleri veya işlemleri gerçekleştirmektir.
+Lumen is a lightweight, **YAML-based rule engine** designed to run seamlessly in containers or directly on your machine. Its primary purpose is to parse user-defined `rules.yaml` files and execute controls, analysis, or log monitoring based on those rules.
 
-Proje, **Docker** ile çalışacak şekilde tasarlanmıştır. Böylece herhangi bir ek bağımlılık kurmadan, sadece Docker kullanarak hızlıca ayağa kaldırılabilir.
-
----
-
-## 🚀 Ne İşe Yarar?
-
-* YAML formatında tanımlanmış kuralları okur
-* Kurallara göre analiz veya kontrol işlemleri yapar
-* Taşınabilir ve izole bir ortamda çalışır (Docker sayesinde)
-* CI/CD, güvenlik kontrolleri veya otomatik denetimler için uygundur
-
-> Projenin temel felsefesi: **"Kuralı dosyada tanımla, ortamdan bağımsız çalıştır."**
+The project is highly portable and has been upgraded to a robust, professional CLI tool.
 
 ---
 
-## 📦 Gereksinimler
+## 🚀 Features
 
-* Docker (20.x veya üzeri önerilir)
+* Reads rules defined in YAML format (supports both `keyword` and `regex` matching).
+* Real-time robust log tailing (resistant to log rotation and truncation).
+* Monitors single or multiple log files simultaneously.
+* Colored and formatted CLI output categorized by severity.
+* Exports caught events as CSV or JSON reports.
+* Isolated execution environment via Docker.
 
-Docker dışında sisteminizde herhangi bir ek kurulum gerekmez.
+> **"Define the rule in a file, run it independent of the environment."**
 
 ---
 
-## ⚙️ Kurulum
+## 📦 Requirements
 
-### 1️⃣ Repoyu Klonlayın
+* Go 1.25.6+ (for local development)
+* Docker (20.x or higher recommended)
+
+---
+
+## ⚙️ Installation
+
+### 1️⃣ Clone the Repository
 
 ```bash
 git clone https://github.com/tuncaycelikkanat/lumen.git
 cd lumen
 ```
 
+### 2️⃣ Build Locally
+
+```bash
+go mod tidy
+go build -o lumen ./cmd
+```
+
 ---
 
-### 2️⃣ Docker Image Oluşturma
+## 🚀 Usage (CLI)
 
-Projeyi Dockerize etmek için aşağıdaki komutu kullanabilirsiniz:
+Lumen uses a modern CLI structure. You can view all options using the `--help` flag:
+
+```bash
+./lumen --help
+```
+
+### Start Monitoring
+
+To start monitoring logs:
+
+```bash
+./lumen start --config rules.yaml --log /var/log/syslog --log /var/log/auth.log --format json
+```
+
+#### Flags:
+* `-c, --config` : Path to the rules configuration file (default: `rules.yaml`)
+* `-l, --log`    : Log file(s) to monitor. Can be used multiple times. (default: `auth.log`)
+* `-f, --format` : Report export format upon exit (`csv` or `json`). (default: `csv`)
+
+To gracefully stop monitoring and save the report, simply press `Ctrl+C`.
+
+---
+
+## 📝 rules.yaml Example
+
+```yaml
+rules:
+  - id: 1
+    name: "SSH Brute Force"
+    keyword: "Failed password"
+    severity: "High"
+  - id: 2
+    name: "Email Found"
+    regex: "[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}"
+    severity: "Info"
+```
+
+---
+
+## 🐳 Docker Deployment
+
+### Build the Image
 
 ```bash
 docker build -t lumen:latest .
 ```
 
----
-
-### 3️⃣ Çalıştırma
-
-Lumen, çalışırken dışarıdan bir `rules.yaml` dosyasına ihtiyaç duyar. Bu dosya container içerisine volume olarak bağlanır.
-
-Örnek çalıştırma komutu:
+### Run with Docker
 
 ```bash
 docker run --rm -it \
   -v $(pwd)/rules.yaml:/app/rules.yaml \
-  lumen:latest
+  -v /var/log/auth.log:/var/log/auth.log \
+  lumen:latest start --config /app/rules.yaml --log /var/log/auth.log
 ```
 
-#### 🔍 Komut Açıklaması
+---
 
-* `--rm` : Container kapandığında otomatik silinir
-* `-it` : Etkileşimli terminal
-* `-v $(pwd)/rules.yaml:/app/rules.yaml` : Yerel `rules.yaml` dosyasını container içine bağlar
-* `lumen:latest` : Kullanılacak Docker image
+## 🤝 Contributing
+
+Contributions are welcome! 🙌
+
+1. Fork the project
+2. Create a feature branch (`feature/my-feature`)
+3. Commit your changes
+4. Open a Pull Request
 
 ---
 
-## 📝 rules.yaml Örneği
+## 📄 License
 
-```yaml
-rules:
-  - name: Example Rule
-    description: Örnek bir kural
-    condition: value > 10
-    action: warn
-```
-
-> ⚠️ `rules.yaml` içeriği ve desteklenen alanlar projenin gelişimine göre değişebilir.
+This project is licensed under the MIT License.
 
 ---
 
-## 🛠️ Geliştirme
+## ✨ Contact
 
-Bu proje Go ile geliştirilmiştir ve Docker odaklı bir çalışma modeli benimser.
-
-- Uygulamanın giriş noktası `cmd/` dizini altındadır
-- Derleme sırasında statik bir binary (`lumen`) üretilir
-- Çalışma zamanı yapılandırması `rules.yaml` dosyası üzerinden yapılır
-- Docker, önerilen ve desteklenen çalışma ortamıdır
-
----
-
-## 📌 Yol Haritası (Planlanan)
-
-* [ ] Daha detaylı kural şeması
-* [ ] JSON/YAML validation
-* [ ] CLI parametreleri
-* [ ] Çıktı formatları (JSON, text, report)
-* [ ] CI/CD entegrasyon örnekleri
-
----
-
-## 🤝 Katkı
-
-Katkılar memnuniyetle karşılanır 🙌
-
-1. Fork'layın
-2. Yeni bir branch açın (`feature/my-feature`)
-3. Değişikliklerinizi commit edin
-4. Pull Request oluşturun
-
----
-
-## 📄 Lisans
-
-Bu proje MIT lisansı ile lisanslanmıştır.
-
----
-
-## ✨ İletişim
-
-Her türlü öneri ve geri bildirim için GitHub Issues üzerinden iletişime geçebilirsiniz.
+Feel free to reach out via GitHub Issues for any feedback or suggestions.
